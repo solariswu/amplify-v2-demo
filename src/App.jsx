@@ -143,10 +143,12 @@ export default function App() {
     return (
       <form onSubmit={handleSubmit}>
         <label htmlFor='email'>Email:</label>
+        <br />
         <input type='text' id='email' name='email' placeholder='test@email.com'/>
         <br />
         <br />
         <label htmlFor='password'>Password: (HelloWorld0101!)</label>
+        <br />
         <input type='password' id='password' name='password' />
         <br />
         <br />
