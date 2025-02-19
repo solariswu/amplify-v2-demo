@@ -5,6 +5,9 @@ import {
   fetchAuthSession,
   signOut,
   fetchUserAttributes,
+  setUpTOTP,
+  verifyTOTPSetup,
+  updateMFAPreference,
 } from 'aws-amplify/auth';
 import outputs from '../amplify_outputs.json';
 import '@aws-amplify/ui-react/styles.css';
@@ -16,12 +19,21 @@ export default function App() {
   const [isLoading, setLoading] = useState(true);
   const [userSession, setUserSession] = useState(null);
   const [enforceTotp, setEnforceTotp] = useState(false);
+  const [totpSetupUri, setTotpSetupUri] = useState(null);
+  const [flow, setFlow] = useState('null');
 
   useEffect(() => {
     const getUserState = async () => {
       const session = await fetchAuthSession();
-      setUserSession(session);
-      checkUserAttributes();
+      if (
+        session &&
+        session.tokens &&
+        session.tokens.idToken &&
+        session.tokens.idToken.payload
+      ) {
+        setUserSession(session);
+        checkUserAttributes();
+      }
       setLoading(false);
     };
     getUserState();
@@ -31,6 +43,8 @@ export default function App() {
     await signOut();
     setUserSession(null);
   }
+
+  // use QRLib to generate a qr code and show it in react screen
 
   const checkUserAttributes = async () => {
     const userAttributes = await fetchUserAttributes();
@@ -53,8 +67,9 @@ export default function App() {
         nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_TOTP_CODE'
       ) {
         // collect OTP from user
+        const otpCode = prompt("What is OTP code on your App?")
         await confirmSignIn({
-          challengeResponse: '123456',
+          challengeResponse: otpCode,
         });
       }
 
@@ -75,11 +90,18 @@ export default function App() {
       }
 
       if (nextStep.signInStep === 'CONTINUE_SIGN_IN_WITH_TOTP_SETUP') {
+        console.log(nextStep.totpSetupDetails.getSetupUri('demo'));
         // present nextStep.totpSetupDetails.getSetupUri() to user
-        // collect OTP from user
-        await confirmSignIn({
-          challengeResponse: '123456',
-        });
+        setTotpSetupUri(nextStep.totpSetupDetails.getSetupUri('demo'));
+        setFlow('signIn');
+        // const otpCode = prompt(
+        //   'Please use the uri to create new TOTP and input the code showing\n' +
+        //     nextStep.totpSetupDetails.getSetupUri('demo')
+        // );
+        // // collect OTP from user
+        // await confirmSignIn({
+        //   code: otpCode,
+        // });
       }
 
       if (nextStep.signInStep === 'DONE') {
@@ -99,6 +121,52 @@ export default function App() {
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  if (flow === 'totpSetup' || flow === 'signIn') {
+    return (
+      <div>
+        <div>
+          <h1>Please use the link below to setup TOTP:</h1>
+          <p>{totpSetupUri.href}</p>
+          <br />
+          <label htmlFor='otpCode'>OTP Code:</label>
+          <input type='text' id='otpCode' name='otpCode' />
+          <br />
+          <br />
+          <button 
+            onClick={async () => {
+              const otpCode = document.getElementById('otpCode').value;
+              if (flow === 'totpSetup') {
+                await verifyTOTPSetup({
+                  code: otpCode,
+                }).then(() => {
+                  updateMFAPreference({
+                    sms: 'DISABLED',
+                    totp: 'PREFERRED',
+                  }).then(() => {
+                    setFlow('null');
+                    alert(
+                      'TOTP updated, you can sign out and resign-in with new TOTP now'
+                    );
+                  });
+                });
+              } else if (flow === 'signIn') {
+                await confirmSignIn({
+                  challengeResponse: otpCode,
+                }).then(() => {
+                  setFlow('null');
+                  alert('OTP code verified');
+                });
+              }
+            }}
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (
     userSession &&
     userSession.tokens &&
@@ -125,7 +193,31 @@ export default function App() {
 
             <p>Your account is required to setup a new TOTP</p>
             <p>Please use the link below:</p>
-            <a href='https://demourl.com'>demourl</a>
+            <button
+              onClick={() => {
+                setUpTOTP().then((response) => {
+                  console.log(response.getSetupUri('demo'));
+                  setFlow('totpSetup');
+                  setTotpSetupUri(response.getSetupUri('demo'));
+
+                  // collect OTP from user
+                  // verifyTOTPSetup({
+                  //   code: otpCode,
+                  // }).then(() => {
+                  //   updateMFAPreference({
+                  //     sms: 'DISABLED',
+                  //     totp: 'PREFERRED',
+                  //   }).then(() => {
+                  //     alert(
+                  //       'TOTP updated, you can sign out and resign-in with new TOTP now'
+                  //     );
+                  //   });
+                  // });
+                });
+              }}
+            >
+              Setup TOTP
+            </button>
           </div>
         </div>
       );
@@ -144,7 +236,12 @@ export default function App() {
       <form onSubmit={handleSubmit}>
         <label htmlFor='email'>Email:</label>
         <br />
-        <input type='text' id='email' name='email' placeholder='test@email.com'/>
+        <input
+          type='text'
+          id='email'
+          name='email'
+          placeholder='test@email.com'
+        />
         <br />
         <br />
         <label htmlFor='password'>Password: (HelloWorld0101!)</label>
