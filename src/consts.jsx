@@ -6,10 +6,10 @@ export const configs = [
             "user_pool_client_id": "krmehdlntr625ora35j82pnit",
             "oauth": {
                 "redirect_sign_in_uri": [
-                    "http://localhost:5173"
+                    "https://multiuserpools.dhindu4ezjbex.amplifyapp.com"
                 ],
                 "redirect_sign_out_uri": [
-                    "http://localhost:5173"
+                    "https://multiuserpools.dhindu4ezjbex.amplifyapp.com"
                 ],
                 "response_type": "code",
                 "scopes": [
@@ -31,10 +31,10 @@ export const configs = [
             "user_pool_client_id": "3s83nf23q8fendqrguf7tb8sv",
             "oauth": {
                 "redirect_sign_in_uri": [
-                    "http://localhost:5173"
+                    "https://multiuserpools.dhindu4ezjbex.amplifyapp.com"
                 ],
                 "redirect_sign_out_uri": [
-                    "http://localhost:5173"
+                    "https://multiuserpools.dhindu4ezjbex.amplifyapp.com"
                 ],
                 "response_type": "code",
                 "scopes": [
@@ -54,10 +54,10 @@ export const configs = [
             "user_pool_client_id": "645las08c4r4lnbdl1s47n32qa",
             "oauth": {
                 "redirect_sign_in_uri": [
-                    "http://localhost:5173"
+                    "https://multiuserpools.dhindu4ezjbex.amplifyapp.com"
                 ],
                 "redirect_sign_out_uri": [
-                    "http://localhost:5173"
+                    "https://multiuserpools.dhindu4ezjbex.amplifyapp.com"
                 ],
                 "response_type": "code",
                 "scopes": [
