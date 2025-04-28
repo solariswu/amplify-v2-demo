@@ -94,11 +94,6 @@ export default function App() {
     return (
       <div>
         <h1>Hello, {userSession.tokens.idToken.payload.email}</h1>
-        <p>userSession: {JSON.stringify(userSession)}</p>
-        <p>
-          userSession.tokens.idToken.payload:{" "}
-          {JSON.stringify(userSession.tokens.idToken.payload)}
-        </p>
         <p>
           UserpoolID:{" "}
           {JSON.stringify(userSession.tokens.idToken.payload.iss)
@@ -106,10 +101,10 @@ export default function App() {
             .pop()}
         </p>
         <p>Userpool Appclient:{" "}{JSON.stringify(userSession.tokens.idToken.payload.aud)}</p>
-        <p>
+        {userSession.tokens.idToken.payload.identities && (<p>
           userSession.tokens.idToken.payload.identities:{" "}
           {JSON.stringify(userSession.tokens.idToken.payload.identities)}
-        </p>
+        </p>)}
 
         <button type="button" onClick={handleSignOut}>
           Sign out
