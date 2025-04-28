@@ -48,6 +48,19 @@ export default function App() {
     const form = event.currentTarget;
     const username = form.elements.email.value;
 
+    if (!username || username.trim().length === 0) {
+      alert("Please enter a username");
+      return;
+    }
+
+    // test whether username is google email address
+    if (username.includes('@google.com')) {
+      Amplify.configure(configs[2]);
+      localStorage.setItem("userpoolconfig", JSON.stringify(configs[2]));
+      signInWithRedirect({ provider: "Google" })
+      return;
+    }
+
     switch (username) {
       case 'user1@test.com':
         Amplify.configure(configs[0]);
@@ -58,11 +71,6 @@ export default function App() {
         Amplify.configure(configs[1]);
         localStorage.setItem("userpoolconfig", JSON.stringify(configs[1]));
         signInWithRedirect()
-        break;
-      case 'user3@test.com':
-        Amplify.configure(configs[2]);
-        localStorage.setItem("userpoolconfig", JSON.stringify(configs[2]));
-        signInWithRedirect({ provider: "Google" })
         break;
       default:
         alert('Invalid username');
@@ -86,8 +94,24 @@ export default function App() {
     return (
       <div>
         <h1>Hello, {userSession.tokens.idToken.payload.email}</h1>
+        <p>userSession: {JSON.stringify(userSession)}</p>
+        <p>
+          userSession.tokens.idToken.payload:{" "}
+          {JSON.stringify(userSession.tokens.idToken.payload)}
+        </p>
+        <p>
+          UserpoolID:{" "}
+          {JSON.stringify(userSession.tokens.idToken.payload.iss)
+            .split("/")
+            .pop()}
+        </p>
+        <p>Userpool Appclient:{" "}{JSON.stringify(userSession.tokens.idToken.payload.aud)}</p>
+        <p>
+          userSession.tokens.idToken.payload.identities:{" "}
+          {JSON.stringify(userSession.tokens.idToken.payload.identities)}
+        </p>
 
-        <button type='button' onClick={handleSignOut}>
+        <button type="button" onClick={handleSignOut}>
           Sign out
         </button>
       </div>
@@ -97,7 +121,7 @@ export default function App() {
       <div>
         user1@test.com - userpool1 oidc provider <br />
         user2@test.com - userpool1 native Login <br />
-        user3@test.com - userpool2 googld login <br />
+        user3@test.com - userpool2 google login <br />
         <br />
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Email:</label>&nbsp;
