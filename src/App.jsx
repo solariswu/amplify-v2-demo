@@ -54,7 +54,7 @@ export default function App() {
     }
 
     // test whether username is google email address
-    if (username.includes('@google.com')) {
+    if (username.includes('@gmail.com')) {
       Amplify.configure(configs[2]);
       localStorage.setItem("userpoolconfig", JSON.stringify(configs[2]));
       signInWithRedirect({ provider: "Google" })
@@ -120,8 +120,8 @@ export default function App() {
     return (
       <div>
         user1@test.com - userpool1 oidc provider <br />
-        user2@test.com - userpool1 native Login <br />
-        user3@test.com - userpool2 google login <br />
+        user2@test.com / user2test - userpool1 native Login <br />
+        {"email address ends with @gmail.com"} - userpool2 google login <br />
         <br />
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Email:</label>&nbsp;
