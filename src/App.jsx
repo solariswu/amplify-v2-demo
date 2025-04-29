@@ -1,13 +1,7 @@
 import { Amplify } from 'aws-amplify';
 import {
-  signIn,
-  confirmSignIn,
   fetchAuthSession,
   signOut,
-  fetchUserAttributes,
-  setUpTOTP,
-  verifyTOTPSetup,
-  updateMFAPreference,
   signInWithRedirect,
   getCurrentUser,
 } from 'aws-amplify/auth';
@@ -102,7 +96,7 @@ export default function App() {
         </p>
         <p>Userpool Appclient:{" "}{JSON.stringify(userSession.tokens.idToken.payload.aud)}</p>
         {userSession.tokens.idToken.payload.identities && (<p>
-          userSession.tokens.idToken.payload.identities:{" "}
+          Federated identities Info:{" "}
           {JSON.stringify(userSession.tokens.idToken.payload.identities)}
         </p>)}
 
@@ -127,11 +121,6 @@ export default function App() {
             placeholder="user1@test.com"
           />
           <br />
-          <br />
-          {/* <label htmlFor='password'>Password: (HelloWorld0101!)</label>
-        <br />
-        <input type='password' id='password' name='password' />
-        <br /> */}
           <br />
           <button type="submit"> Login </button>
         </form>
