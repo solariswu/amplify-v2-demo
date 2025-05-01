@@ -1,4 +1,3 @@
-import {Amplify} from 'aws-amplify';
 import {
   signIn,
   confirmSignIn,
@@ -8,12 +7,11 @@ import {
   setUpTOTP,
   verifyTOTPSetup,
   updateMFAPreference,
+  associateWebAuthnCredential,
 } from 'aws-amplify/auth';
-import outputs from '../amplify_outputs.json';
-import '@aws-amplify/ui-react/styles.css';
-import {useEffect, useState} from 'react';
 
-Amplify.configure(outputs);
+import '@aws-amplify/ui-react/styles.css';
+import { useEffect, useState } from 'react';
 
 export default function App() {
   const [isLoading, setLoading] = useState(true);
@@ -44,6 +42,10 @@ export default function App() {
     setUserSession(null);
   }
 
+  async function handleAddPasskey() {
+    await associateWebAuthnCredential();
+  }
+
   // use QRLib to generate a qr code and show it in react screen
 
   const checkUserAttributes = async () => {
@@ -55,7 +57,7 @@ export default function App() {
     event.preventDefault();
     const form = event.currentTarget;
     try {
-      const {nextStep} = await signIn({
+      const { nextStep } = await signIn({
         username: form.elements.email.value,
         password: form.elements.password.value,
       });
@@ -104,6 +106,13 @@ export default function App() {
         // });
       }
 
+      if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+        const newPassword = prompt('Please enter a new password');
+        await confirmSignIn({
+          challengeResponse: newPassword,
+        });
+      }
+
       if (nextStep.signInStep === 'DONE') {
         const session = await fetchAuthSession();
         console.log('session', session);
@@ -133,7 +142,7 @@ export default function App() {
           <input type='text' id='otpCode' name='otpCode' />
           <br />
           <br />
-          <button 
+          <button
             onClick={async () => {
               const otpCode = document.getElementById('otpCode').value;
               if (flow === 'totpSetup') {
@@ -189,7 +198,7 @@ export default function App() {
             </button>
           </div>
           <div>
-            <h1>Hello, {userSession.tokens.idToken.payload.email}</h1>
+            <h1>Hello, {userSession.tokens.idToken.payload['cognito:username']}</h1>
 
             <p>Your account is required to setup a new TOTP</p>
             <p>Please use the link below:</p>
@@ -224,9 +233,15 @@ export default function App() {
     }
     return (
       <div>
-        <h1>Hello, {userSession.tokens.idToken.payload.email}</h1>
-
-        <button type='button' onClick={handleSignOut}>
+        <h1>Hello, {userSession.tokens.idToken.payload["cognito:username"]}</h1>
+        <button
+          type="button"
+          onClick={handleAddPasskey}
+          style={{ margin: "0 10px 0 0" }}
+        >
+          Add Passkey
+        </button>
+        <button type="button" onClick={handleSignOut}>
           Sign out
         </button>
       </div>
